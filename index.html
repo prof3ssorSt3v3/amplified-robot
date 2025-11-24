@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cache API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Cache API</h1>
+  </header>
+  <main>
+    <p data-count="2" data-symbol=""><button id="btnLoad">Load an Image</button></p>
+    <p data-count="0" data-symbol=""><img src="" alt="" id="loadedImage"></p>
+    <p data-count="0" data-symbol=""><button id="btnSave">Save an Image from Fetch</button></p>
+    <hr/>
+    <p data-count="0" data-symbol="">
+      <form action="#"><input type="file" id="image"><br/>
+        <button id="btnSubmit">Save an Image from Form</button>
+      </form>
+    </p>
+    <hr/>
+    <p data-count="0" data-symbol=""><button id="btnLoadJson">Load JSON by Fetch</button></p>
+    <p data-count="0" data-symbol=""><button id="btnSaveJson">Save JSON from Fetch</button></p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,49 @@
+:root {
+  --font-primary: 'Noto Sans', sans-serif;
+  --font-secondary: 'Noto Serif', serif;
+
+  --blue: hsl(222, 50%, 50%);
+  --white: hsl(222, 10%, 90%);
+
+  --radius: 0.5rem;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+body {
+  font-family: var(--font-primary);
+  font-weight: 300;
+  font-size: 1.5rem;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-secondary);
+  font-weight: 300;
+}
+header,
+main {
+  margin: 1rem 2rem;
+}
+input[type='file'],
+button {
+  color: var(--white);
+  background-color: var(--blue);
+  padding: 0.25rem 2rem;
+  font-size: inherit;
+  border: none;
+  border-radius: var(--radius);
+  margin-block: 1rem;
+}
+p:has(button)::after {
+  content: attr(data-symbol);
+  /* attr(data-count); */
+  display: inline-block;
+  margin-inline: 1rem;
+  color: var(--blue);
+}
