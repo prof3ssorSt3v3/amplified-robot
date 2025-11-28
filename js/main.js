@@ -19,6 +19,7 @@ const log = console.log;
 const check = '✓';
 let CACHE = null; //global reference to the Monday cache
 const CacheKey = 'Monday';
+let currentImageURL = null; //to be able to reuse the image
 
 document.addEventListener('DOMContentLoaded', init);
 
@@ -30,6 +31,7 @@ function init() {
   caches.open(CacheKey).then((cache) => {
     CACHE = cache;
   });
+  getImgFromCache(); //show the first image from the cache when page loads
   addListeners();
 }
 
@@ -40,13 +42,129 @@ function example() {
   document.querySelector('p').setAttribute('data-symbol', str);
 }
 function addListeners() {
-  document.getElementById('btnLoad').addEventListener('click', f);
-  document.getElementById('btnSave').addEventListener('click', f);
+  document.getElementById('btnLoad').addEventListener('click', getImgFromCache);
+  document.getElementById('btnSave').addEventListener('click', getAllTheImages);
   document.getElementById('btnLoadJson').addEventListener('click', loadJson);
   document.getElementById('btnSaveJson').addEventListener('click', saveJson);
-  document.querySelector('form').addEventListener('submit', f);
+  document.querySelector('form').addEventListener('submit', saveImageInCache);
+
+  document.getElementById('loadedImage').addEventListener('click', addImage);
 }
 let DATA = null; //to share between load and save
+
+function getAllTheImages(ev) {
+  //get ALL the images from the cache
+  let Cache;
+  caches
+    .open('myimages')
+    .then((cache) => {
+      Cache = cache;
+      return Cache.keys(); //get all the requests
+    })
+    .then((keys) => {
+      //match all the keys (Requests)
+      return Promise.allSettled(keys.map((key) => Cache.match(key)));
+      // return Promise.allSettled( keys.map(request=> Cache.match(request)) );
+    })
+    .then((responses) => {
+      console.log(responses);
+      //read the blob from each and every response
+      return Promise.allSettled(
+        responses.map((response) => {
+          // console.log(response.value.status); //fulfilled
+          return response.value.blob();
+        })
+      );
+    })
+    .then((blobs) => {
+      // [{status:'fulfilled', value: blob}, {status:'fulfilled', value: blob}]
+      //turn the blobs into URLS
+      let urls = blobs.map((blob) => URL.createObjectURL(blob.value));
+      let df = new DocumentFragment();
+      urls.forEach((url) => {
+        let img = document.createElement('img');
+        img.src = url;
+        img.alt = 'Howdy image';
+        df.append(img);
+      });
+      document.body.append(df);
+    });
+}
+
+function addImage(ev) {
+  //user clicked on the image tag.
+  //add another image at the bottom of the body using the same url
+  // let img = `<p><img src="${currentImageURL}" alt="image copy"/></p>`;
+  // document.body.innerHTML += img;
+
+  let img = document.createElement('img');
+  img.alt = 'image copy';
+  img.src = currentImageURL;
+  document.body.append(img);
+}
+
+function getImgFromCache(ev) {
+  //get an image from the cache
+  let Cache = null;
+  caches
+    .open('myimages')
+    .then((cache) => {
+      console.log('opened cache');
+      //get a list of all the Request objects in the cache
+      Cache = cache;
+      return Cache.keys();
+    })
+    .then((keys) => {
+      //keys is an Array of Request objects
+      console.log(keys[0].url);
+      console.log(keys[2].url);
+      //Cache.match will use the Request to find a Response
+      let num = Math.floor(Math.random() * keys.length);
+      return Cache.match(keys[num]);
+      //this is just like fetch(request)... but talking to the Cache
+    })
+    .then((response) => {
+      //response that is connected with the Request keys[0]
+      //response body will contain an image (which is a file that contains a blob)
+      return response.blob();
+      //.blob() reads the binary data from the Response body
+    })
+    .then((blob) => {
+      //take the blob and stick it in the <img>
+      const img = document.getElementById('loadedImage');
+      //blob is like an array of numbers
+      //img.src needs a real HREF
+      currentImageURL = URL.createObjectURL(blob);
+      console.log(currentImageURL);
+      img.src = currentImageURL;
+      //createObjectURL creates an HREF that points to the place in the heap where the image blob is saved
+    });
+}
+
+function saveImageInCache(ev) {
+  ev.preventDefault();
+  //stop the page reloading when the user clicks the submit button
+  let fileInput = document.getElementById('image');
+  console.log(fileInput.files);
+  if (fileInput.files.length == 0) return; //exit if no file
+  let file = fileInput.files[0];
+  let filename = crypto.randomUUID();
+  console.log(filename);
+
+  let url = new URL(`${location.origin}/images/${filename}`);
+  let request = new Request(url);
+  let response = new Response(file, { status: 200 });
+
+  caches
+    .open('myimages')
+    .then((cache) => {
+      return cache.put(request, response);
+    })
+    .then(() => {})
+    .catch((err) => {});
+
+  // let f = new File()
+}
 
 function saveJson() {
   if (DATA == null || CACHE == null) return;
